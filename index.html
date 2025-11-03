@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Грешный календарь — Декабрь 2025 (Desktop)</title>
+<link href="https://fonts.googleapis.com/css2?family=Monoton&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#07050f">
+
+<script>
+// ===== Автоопределение устройства: телефоны/планшеты -> mobile.html =====
+(function(){
+  try {
+    var qp = new URLSearchParams(location.search);
+    if (qp.has('desktop')) return; // ручной оверрайд
+    var ua = navigator.userAgent || "";
+    var isMobileUA = /Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(ua);
+    var isSmall = Math.min(screen.width || innerWidth || 0, screen.height || innerHeight || 0) < 900;
+    var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if ((isMobileUA || isTouch) && isSmall) {
+      var url = new URL('mobile.html', location.href);
+      url.searchParams.set('mobile','1');
+      location.replace(url.href);
+    }
+  } catch(e){}
+})();
+</script>
+
+<style>
+:root{
+  --bg:#07050f; --ink:#f6f4ff; --neon:#7ae6ff; --gold:#fff3a0;
+  --tile:#15102c; --tile2:#211a46;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,Segoe UI,Roboto,Arial}
+.wrap{max-width:1200px;margin:0 auto;padding:24px}
+h1{font-family:Monoton,cursive;color:var(--neon);text-shadow:0 0 1px #fff,0 0 8px var(--neon),0 0 20px var(--neon),0 0 40px #45cff0;margin:6px 0 2px;font-size:64px;text-align:center}
+.sub{color:var(--gold);text-align:center;font-weight:800;letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px}
+.frame{position:relative;border-radius:18px;padding:16px;background:rgba(20,15,39,.55);box-shadow:0 18px 60px rgba(0,0,0,.5)}
+.frame:before{content:"";position:absolute;inset:-1px;border-radius:18px;border:2px solid rgba(122,230,255,.85);box-shadow:0 0 18px rgba(122,230,255,.6),0 0 36px rgba(122,230,255,.35) inset;pointer-events:none}
+.toprow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:12px}
+.legend{display:flex;gap:12px;align-items:center;font-size:14px;opacity:.9}
+.badge{display:inline-flex;align-items:center;gap:6px}
+.badge i{width:12px;height:12px;border-radius:3px;display:inline-block}
+.i-open{background:#4caf50}
+.i-locked{background:#7b6da7}
+.i-seen{background:#00d0ff}
+.switch{font-size:14px;color:#7ae6ff;text-decoration:none;border:1px solid rgba(122,230,255,.6);padding:8px 12px;border-radius:999px}
+.switch:hover{background:rgba(122,230,255,.08)}
+.dow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:8px;color:#c7c0ea;text-transform:uppercase;letter-spacing:.06em;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.cell{position:relative;aspect-ratio:1/1;border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:radial-gradient(140% 160% at 100% -10%, var(--tile2) 0%, var(--tile) 65%);border:1px solid rgba(130,110,210,.35);transition:transform .18s ease, box-shadow .18s ease}
+.cell:hover{transform:translateY(-2px);box-shadow:0 14px 28px rgba(0,0,0,.35)}
+.num{font-weight:900;font-size:28px;letter-spacing:.02em;color:#efeaff;text-shadow:0 0 8px rgba(122,230,255,.45)}
+.cell.locked{opacity:.5;filter:saturate(.6)}
+.cell.locked .num{color:#9a94b8;text-shadow:none}
+.cell.seen:after{content:"";position:absolute;top:8px;right:8px;width:10px;height:10px;border-radius:50%;background:#00d0ff;box-shadow:0 0 10px #00d0ff}
+/* Modal */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal.show{display:flex}
+.modalBg{position:absolute;inset:0;background:rgba(4,3,9,.82);backdrop-filter:blur(8px);z-index:-1}
+.card{width:min(100%,980px);height:min(85vh,900px);border-radius:18px;perspective:1400px;position:relative}
+.flip{position:absolute;inset:0;border-radius:18px;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.2,.7,.2,1);box-shadow:0 18px 40px rgba(0,0,0,.55)}
+.side{position:absolute;inset:0;border-radius:18px;overflow:hidden;backface-visibility:hidden;border:1px solid #3e2f71;background:#0f0a1e}
+.front{display:flex;align-items:center;justify-content:center}
+.front img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.back{transform:rotateY(180deg);display:flex;flex-direction:column;gap:16px;padding:24px;background:radial-gradient(120% 140% at 100% 0%, #1b1436 0%, #0f0a1e 65%)}
+.back h2{margin:0 0 6px;font-size:24px;color:#f0e7ff}
+.task{white-space:pre-wrap;font-size:16px;line-height:1.55;color:#ded7f7;border-left:3px solid #6f55ff;padding:12px 14px;border-radius:8px;background:linear-gradient(90deg, rgba(111,85,255,.08), transparent)}
+.flip.flipped{transform:rotateY(180deg)}
+.topbar{position:absolute;top:10px;right:10px;z-index:5}
+.close{background:rgba(20,15,39,.7);border:1px solid #4a3a83;color:#efeaff;border-radius:999px;padding:12px 16px;cursor:pointer;font-weight:800;font-size:16px;box-shadow:0 0 8px rgba(122,230,255,.35), 0 0 16px rgba(122,230,255,.2);backdrop-filter:blur(4px)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Грешный календарь</h1>
+  <div class="sub">ДЕКАБРЬ 2025</div>
+
+  <div class="frame">
+    <div class="toprow">
+      <div class="legend">
+        <span class="badge"><i class="i-open"></i> доступно</span>
+        <span class="badge"><i class="i-locked"></i> закрыто</span>
+        <span class="badge"><i class="i-seen"></i> открыто ранее</span>
+      </div>
+      <a class="switch" href="mobile.html?mobile=1">📱 Мобильная</a>
+    </div>
+    <div class="dow"><div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div></div>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modalBg"></div>
+  <div class="card">
+    <div class="topbar"><button class="close" id="closeBtn" type="button">Закрыть ✕</button></div>
+    <div class="flip" id="flip">
+      <div class="side front" id="frontSide">
+        <img id="cardImg" alt="Карточка" decoding="async" referrerpolicy="no-referrer">
+      </div>
+      <div class="side back" id="backSide">
+        <h2 id="modalTitle">Задание</h2>
+        <div class="task" id="taskText"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE_URL = "https://raw.githubusercontent.com/Moscvi4ka/grehny-calendar/main/";
+const YEAR = 2025;
+const MONTH_INDEX = 11; // декабрь
+const MSK_TZ = "Europe/Moscow";
+const PROGRESS_KEY = "gc_opened_days_v1";
+
+/* Тексты */
+const TASKS = {
+1:{title:"Санта в шоке!",task:`Сними видео, где ты заходишь в комнату под “We Wish You a Merry Christmas”, как будто ты главный Дед Мороз этой группы. Доп. условие: ты Дед Мороз, у которого корпоратив с 2006 года не заканчивался. Фраза при входе: «Кто заказывал праздник?»`},
+2:{title:"Олень не выдержал!",task:`Нарисуй себе красный нос и рога (или надень рожки). Пробеги по комнате, крича: «хо-хо-хо, я олень-курьер!» Видео обязательно.`},
+3:{title:"Снежинка на грани!",task:`Сделай костюм снежинки из туалетной бумаги (на себе). Позируй как модель, скажи: «Я боевая снежинка!» Видео обязательно.`},
+4:{title:"Эльфы в отрыве!",task:`Надень самые дикие носки (или нарисуй их маркером). Сделай фото, как будто это модная фотосессия для Vogue.`},
+5:{title:"Санта потерял мешок!",task:`Купи сладкий новогодний подарок и заточи его в одно лицо. Втихую, спрятавшись где-то в квартире. Видео обязательно. Никто не должен об этом знать. Злобно хихикай и жмурься от удовольствия.`},
+6:{title:"Снеговик перегрелся!",task:`Надень шапку, перчатки и шарф, но при этом будь в пижаме. Серьёзно читай прогноз погоды в стиле ведущего с ТВ. По традиции, видео.`},
+7:{title:"Мандариновый шот!",task:`Набери в рот целый мандарин и попробуй спеть куплет любой новогодней песни. Громко. С выражением. И с видео.`},
+8:{title:"Санта в караоке!",task:`Спой новогоднюю песню в ложку, как будто ты звезда на концерте. Энергия 100%! Больше экспрессии. Больше! Больше, я говорю!!! Видео в студию.`},
+9:{title:"Олень-диджей!",task:`Каждый родитель делает по одному мему и озвучивает его голосом оригинала. Превзойдите друг друга!. Пример, для понимания: Присылаете в чат отрывок видео мема или желаемой сцены для озвучки. А дальше записываете голосовое, где озвучиваете этот фрагмент. На семью 2 озвучки`},
+10:{title:"Коктейль по рецепту Санты!",task:`Смешай “коктейль апокалипсиса” из сока, соуса и газировки. Выпей и сними своё лицо в момент “просветления”.`},
+11:{title:"Тост за ёлку!",task:`Обними ёлку и прошепчи ей на ухо: «Ты самая красивая сегодня». Флирт приветствуется. Видео твоих пикап успехов обязательно.`},
+12:{title:"Санта в халате!",task:`Вся семья в пижамах, с кружками и хаосом вокруг. Пусть на полу будут разбросаны игрушки, новогодние украшения, одежда, и тд. Будь властелином хаоса!. Фото с подписью: «Декабрь. Мы держимся.»`},
+13:{title:"Снежный бармен!",task:`Приготовь фирменное новогоднее блюдо вашей семьи (Оливье, шуба и мимоза не считаются. Нет, если в оливье вместо колбасы добавить курицу - это все равно будет оливье. Не пытайся меня обмануть). Скинь фото и рецепт в чат.`},
+14:{title:"Эльф с похмелья!",task:`Переоденься в костюм из своего детства и прочитай стишок для Деда Мороза, стоя на стульчике. Не забудь про чтение с выражением, а то не получишь подарок. “Детское поведение” - must have, не забывай, что тебе 5 лет;) Видео обязательно.`},
+15:{title:"Санта в клубе!",task:`Танцуй под “All I Want for Christmas Is You” (Mariah Carey) как на конкурсе “Танцы родителей после детсадовского корпоратива”. Давай детка, ты сегодня звезда!`},
+16:{title:"Олень на караоке-баттле!",task:`Сегодня рубеж. Самое время напиться “соком”, закусывая сырком или чипсами. Короче, сегодня разрешаем тебе выдохнуть и расслабиться (сок и сырок можешь заменить на принятие ванный или любые другие расслабляющие процедуры, но за “сок” будут дополнительные баллы в твою копилочку. Подтвердить всё же придется. И просто терпи —  потому что Господь с тобой ещё не закончил.`},
+17:{title:"Миссис Клаус на шопинге!",task:`Придумай для себя максимально странный новогодний образ, надень всё это безобразие на себя и скажи, глядя в камеру: «Я больше никогда не буду покупать костюм на AliExpress.». Фото total look и в полный рост обязательны. Мы все хотим восхититься твоей изобретательностью`},
+18:{title:"Санта в сауне!",task:`Переоденься в зимнюю одежду, надеть варежки - они самое главное условие! (если варежек нету, включи фантазию, и завежи пальцы друг с другом таким образом, чтобы выглядело, как будто ты в варежках) И почисти апельсин без остановок. Видео обязательно.`},
+19:{title:"Гирлянда запуталась!",task:`Сделай шапочку из фольги и запиши “пророчество” на 2026 год. Лицо серьёзное, пророчество безумное. Мы все должны тебе поверить. Вангуй как в последний раз. Видео обязательно`},
+20:{title:"Новогодний микс!",task:`Бросай тапки в потолок как “новогодние ракеты”. Запиши в  режиме Слоу-мо как они летят, добавляем крики “БАБАХ!”, как будто ракета взорвалась. Атмосфера апокалипсиса.`},
+21:{title:"Санта на утреннике!",task:`Сними короткое видео, где ты говоришь: «Я украл все конфеты! Ха-ха-ха!» Смейся в лучших традициях главного злодея всех времен. (и потом ребёнок тебя «побеждает»). Конечно же что? Видео`},
+22:{title:"Олень Uber!",task:`Оденься как “пьяный Дед Мороз” и “раздавай подарки” мебели в квартире, целуя стул, обнимая шторы, и тд. Каждый раз шепчи: “С Новым годом, сутльчик/шторки/диванчик, и тд!”. Видео обязательно`},
+23:{title:"Бар «Северное сияние».",task:`Объяви пылесос или швабру “Снегуркой”, включи музыку Sam Brown stop и станцуй с ней самый страстный танец в своей жизни. Шепчи: “Ты моя королева снега!”. Ну, и ждем видео.`},
+24:{title:"Санта на зуме",task:`Сними 10 секунд, где ты изображаешь Кевина, который впервые нанес лосьон на щеки и начинает кричать. Постарайся повторить эту сцену максимально точно. Видео обязательно.`},
+25:{title:"Олень в спортзале.",task:`Создай из подушек или одеял злого похитителя Нового года и устрой с ним битву под музыку “Mortal Kombat”. В твоих же интересах победить, иначе Новый год может и не наступить. Видео эпичной битвы века ждем.`},
+26:{title:"Санта в огне!",task:`Купи небольшой подарок для незнакомца. Подойди и вручи, поздравив с наступающим Новым годом. Это обязательно должен быть незнакомец. Побори в себе интроверта! Я верю в тебя.`},
+27:{title:"Эльфы варят глинтвейн!",task:`Сделай себе Грим “новогоднего тролля” — борода кетчупом, рычи на зеркало: “Где мои подарки?!” Дизайнерские решения в гримме приветствуются. Видео не забываем`},
+28:{title:"Санта в самолёте!",task:`Убирай игрушки с максимально пафосной музыкой (Titanic, Eye of the Tiger). По традиции, присылай видео`},
+29:{title:"Танец у ёлки!",task:`Перепой “В лесу родилась ёлочка” в жанре оперы, рэпа или шансона. Если соседи постучали — это успех.. Ты знаешь что делать и куда присылать;)`},
+30:{title:"Бар “Last Shot”!",task:`Сделай коллаж: “Как я выглядел летом → как я выгляжу 30 декабря”. Начни бодро, закончи с видом “я просто тень человека”.`},
+31:{title:"Хэппи энд!",task:`Сними короткое видео-тост: «Спасибо саду за моральную поддержку весь год. Мы выжили, у нас всё получилось. С Новым годом, психи!» Можешь пожелать всем что-то и от себя. С наступающим Новым 2026 годом, товарищи. УРА!`}
+};
+
+function nowMSK(){ return new Date(new Date().toLocaleString('en-US',{timeZone:MSK_TZ})); }
+function isOpenByDate(day){
+  const n=nowMSK(); const y=n.getFullYear(), m=n.getMonth(), d=n.getDate();
+  if (y>YEAR) return true; if (y<YEAR) return false;
+  if (m>MONTH_INDEX) return true; if (m<MONTH_INDEX) return false;
+  return d>=day;
+}
+
+// ===== Прогресс (shared между desktop и mobile) =====
+function readProgress(){
+  try{ return new Set(JSON.parse(localStorage.getItem(PROGRESS_KEY)||"[]")); }catch(e){ return new Set(); }
+}
+function writeProgress(set){
+  localStorage.setItem(PROGRESS_KEY, JSON.stringify(Array.from(set)));
+}
+const PROGRESS = readProgress();
+
+// ===== Предзагрузка =====
+const IMG_CACHE={};
+function preloadAll(){
+  for(let d=1; d<=31; d++){
+    const img=new Image(); img.decoding='async'; img.loading='eager'; img.referrerPolicy='no-referrer';
+    img.src=BASE_URL+d+'.png'; IMG_CACHE[d]=img;
+  }
+}
+
+// ===== Сетка 7x =====
+const grid=document.getElementById('grid');
+function buildGrid(){
+  const first=new Date(YEAR, MONTH_INDEX, 1);
+  const shift=(first.getDay()+6)%7; // понедельник=0
+  for(let i=0;i<shift;i++){
+    const b=document.createElement('div'); b.className='cell'; b.style.visibility='hidden'; grid.append(b);
+  }
+  for(let day=1; day<=31; day++){
+    const cell=document.createElement('div'); cell.className='cell';
+    const num=document.createElement('div'); num.className='num'; num.textContent=day;
+    const open=isOpenByDate(day);
+    if(open){ cell.addEventListener('click', ()=>openModal(day)); }
+    else{ cell.classList.add('locked'); }
+    if(PROGRESS.has(day)) cell.classList.add('seen');
+    cell.append(num); grid.append(cell);
+  }
+}
+
+// ===== Модалка и flip =====
+const modal=document.getElementById('modal');
+const modalBg=document.querySelector('.modalBg');
+const flip=document.getElementById('flip');
+const imgEl=document.getElementById('cardImg');
+const titleEl=document.getElementById('modalTitle');
+const taskEl=document.getElementById('taskText');
+
+function markSeen(day){
+  if(!PROGRESS.has(day)){
+    PROGRESS.add(day);
+    writeProgress(PROGRESS);
+    // пометить ячейку
+    const idx = day; // сдвиги есть, поэтому проще найти по тексту
+    const cells = Array.from(grid.querySelectorAll('.cell')).filter(c => c.style.visibility!=='hidden');
+    const target = cells.find(c => (c.textContent||"").trim() == String(day));
+    if(target) target.classList.add('seen');
+  }
+}
+
+function openModal(day){
+  const info=TASKS[day] || {title:`Задание ${day}`,task:'Текст скоро появится'};
+  titleEl.textContent=info.title; taskEl.textContent=info.task;
+  const pic=IMG_CACHE[day]; imgEl.src=(pic && pic.complete)?pic.src:(BASE_URL+day+'.png');
+  flip.classList.remove('flipped'); modal.classList.add('show'); document.body.style.overflow='hidden';
+  markSeen(day);
+}
+function closeModal(){ modal.classList.remove('show'); document.body.style.overflow=''; setTimeout(()=>flip.classList.remove('flipped'),120); }
+
+document.getElementById('frontSide').addEventListener('click', ()=> flip.classList.add('flipped'));
+document.getElementById('backSide').addEventListener('click', (e)=>{ if(!e.target.closest('.task,button,a')) flip.classList.remove('flipped'); });
+document.getElementById('closeBtn').addEventListener('click', closeModal);
+modal.addEventListener('click', (e)=>{ if(e.target===modal || e.target===modalBg) closeModal(); });
+document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && modal.classList.contains('show')) closeModal(); });
+
+preloadAll();
+buildGrid();
+</script>
+</body>
+</html>
